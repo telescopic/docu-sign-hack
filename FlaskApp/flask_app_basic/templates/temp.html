@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+{% block headcontent %}
+    <script>
+        // localStorage.features = "{{graphics}}";
+        var url =decodeURIComponent(window.location.search.substring(1));
+        var qarray = url.split('&');
+        var parr = qarray[0].split("=");
+        var graphics = parr[1];
+        
+        if(graphics == ""){
+            localStorage.removeItem("features");
+        }
+        else{
+            localStorage.features = graphics;
+        }
+
+        window.onload = function(){
+            window.location.href = "{{url_for('view_map')}}"
+        }
+    </script>
+{% endblock %}

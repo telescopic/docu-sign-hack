@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block headcontent %}
+<script>
+    function simulateClick(){
+        sub_btn = document.getElementById("del-branch");
+        sub_btn.click();
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="content-section" style="border-radius: 20px;">
+    <h3>Branch Information</h3>
+    <ul>
+        <li>Author: 
+            <small class="btn" style="font-size: 15px; height:40px; background-color: #403F4C; color: rgb(255, 255, 255); border-color: black;">
+            {{ author }}
+            </small> 
+        </li>
+
+        <li>Branch Name: 
+            <small class="btn" style="font-size: 15px; height:40px; background-color: #2fc070; color: rgb(255, 255, 255); border-color: black;">
+            {{ branch }}
+            </small> 
+        </li>
+
+        <li>
+            Delete this branch? <br> 
+            <button onclick="simulateClick()" class="btn" style="background-color: crimson;">
+                Confirm and delete this branch!!!
+            </button>
+            <br> <small>(<b>NOTE:</b> once deleted, this branch's contents are lost forever)</small>
+        </li>
+    </ul>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }} 
+        {{ form.submit(style="display:none", class="form-control", id="del-branch") }}
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+
+{% block headcontent %}
+    <script>
+        var nameSetEdit = new Set();
+        var nameSetMerge = new Set();
+        
+        function isDoubleByte(str) {
+            for (var i = 0, n = str.length; i < n; i++) {
+                if (str.charCodeAt( i ) > 255) { return true; }
+            }
+            return false;
+        }
+
+        function doOP(eID, operation, name){
+            if(eID == "dropEdit"){
+                if(operation == "add"){
+                    nameSetEdit.add(name);
+                }
+                else{
+                    nameSetEdit.delete(name);
+                }
+            }
+            else{
+                if(operation == "add"){
+                    nameSetMerge.add(name);
+                }
+                else{
+                    nameSetMerge.delete(name);
+                }
+            }
+
+            // console.log("NAMESET");
+            // console.log(nameSetEdit);
+            // console.log("MERGESET");
+            // console.log(nameSetMerge);
+        }
+
+        function toggleChosen(btn){
+            innerString = btn.textContent;
+            if(isDoubleByte(innerString)){
+                btn.textContent = btn.name;
+                doOP(btn.parentElement.id, "remove", btn.name);
+            }
+            else{
+                btn.textContent = innerString + "\u2713";
+                doOP(btn.parentElement.id, "add", btn.name);
+            }
+        }
+        
+        function getNameString(nameSet){
+            var nameStr = ""
+            for(let item of nameSet){
+                nameStr = nameStr + item + "|";
+            }
+
+            return nameStr;
+        }
+
+        function setContents(){
+            editNameString = getNameString(nameSetEdit);
+            mergeNameString = getNameString(nameSetMerge);
+            branch_name = document.getElementById("to-branch").value;
+
+            document.getElementById("branch-name").value = branch_name;
+            document.getElementById("edit-access").value = editNameString;
+            document.getElementById("merge-access").value = mergeNameString;
+        }
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="content-section" style="border-radius: 20px;">
+        <div class="row">
+            &nbsp; <h3>Clone Existing Map!</h3>&nbsp;
+            <small> &nbsp; (Enter a new and unique map name. Eg: <b>0.0.2-add-habitat-range</b> )</small>
+        </div>
+        <br>
+        <div class="row">
+            &nbsp;
+            <small class="btn" style="font-size: 12px; height:40px; background-color: #403F4C; color: rgb(255, 255, 255); border-color: black;">
+                {{ from_author }}
+            </small> 
+            
+            <h3><b>/</b></h3> 
+            &nbsp;
+            <small class="btn" style="font-size: 12px; height:40px;">
+                <b>{{ from_branch }}</b>
+            </small>
+
+            &nbsp;
+            <h5> <b> &rarr; </b> </h5>
+            &nbsp;
+            <small class="btn" style="font-size: 13px; height:40px; background-color: #403F4C; color: rgb(255, 255, 255); border-color: black;">
+                {{ to_author }}
+            </small> 
+            <h3><b>/</b></h3> 
+            &nbsp;
+            <input id="to-branch" placeholder = " branch name" type="text" style="border-radius: 20px; height:45px; font-size: 15px ;width:200px; outline: none;">
+        </div>
+
+        <hr>
+        <div >
+            Configure Permissions <br>
+            <small> 
+                (Configure <b>Edit</b> and <b>Merge</b> permissions)
+            </small>
+            
+            <div class="row">
+                &nbsp;
+                <div class="dropdown">
+                    <br>
+                    &nbsp;
+                    Edit Access
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <small>Choose ids</small>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="dropEdit">
+                        {% for user in users %}
+                            <button class="dropdown-item" name={{user}} onclick="toggleChosen(this)">
+                                {{ user }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                    <br>
+                    &nbsp;
+                    <small>(add and commit notes and visual changes to maps)</small>
+                  </div>                  
+            </div>
+
+            <div class="row">
+                &nbsp;
+                <div class="dropdown">
+                    <br>
+                    &nbsp;
+                    Merge Access
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <small>Choose ids</small>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="dropMerge">
+                        {% for user in users %}
+                            <button class="dropdown-item" name={{user}} onclick="toggleChosen(this)">
+                                {{ user }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                    <br>
+                    &nbsp;
+                    <small>(merge one map branch onto another)</small>
+                  </div>                  
+            </div>
+        </div>
+        <hr>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }} 
+            {{ form.branch_name(style="display:none", class="form-control", id="branch-name") }}
+            {{ form.edit_access(style="display:none", class="form-control", id="edit-access") }}
+            {{ form.merge_access(style="display:none", class="form-control",  id="merge-access") }}
+            {{ form.submit(id="submit", class="btn", onclick="setContents()") }}
+        </form>
+        <script>
+            document.getElementById("branch-name").value = "";
+            document.getElementById("edit-access").value = "";
+            document.getElementById("merge-access").value = "";
+        </script>
+    </div>
+{% endblock content%}

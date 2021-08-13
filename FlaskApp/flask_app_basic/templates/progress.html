@@ -1,0 +1,57 @@
+{% extends 'layout_history.html' %}
+
+{% block headcontent %}
+<style>
+    #myProgress {
+      width: 100%;
+      background-color: #ddd;
+    }
+    
+    #myBar {
+      width: 1%;
+      height: 30px;
+      background-color: #04AA6D;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h3>Generating final document to Sign - Please Wait!</h3>
+<div id="myProgress">
+    <div id="myBar"></div>
+  </div>
+  
+  <br>
+  
+  <script>
+  var i = 0;
+  function move() {
+    if (i == 0) {
+      i = 1;
+      var elem = document.getElementById("myBar");
+      var width = 1;
+      var id = setInterval(frame, 100);
+      function frame() {
+        if (width >= 100) {
+          clearInterval(id);
+          i = 0;
+          console.log(document.getElementById("loadMap").contentWindow.HREF);
+          document.getElementById("HREF").value = document.getElementById("loadMap").contentWindow.HREF;
+          document.getElementById("submitt").click();
+        //   window.location.href = "{{url_for('post_sign')}}"
+        } else {
+          width++;
+          elem.style.width = width + "%";
+        }
+      }
+    }
+  }
+  move()
+  </script>
+  <iframe id="loadMap" src="{{url_for('print_map')}}?graphics={{graphics}}" style="height: 200%; width:200%; visibility: hidden;"></iframe>
+  
+  <form action="{{ url_for('gen_sign') }}" method="post">
+    <input type="text" name="HREF" id="HREF" style="display:none">
+    <input type="submit" id="submitt" style="display:none">
+</form>
+{% endblock %}

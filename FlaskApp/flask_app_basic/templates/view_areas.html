@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% for area in areas %}
+        <article class="media content-section">
+            <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="#">{{ area.subspecies }}</a>
+            </div>
+            <h2><a class="article-title" href="#">{{ area.area }}</a></h2>
+            <p class="article-content">{{ area.description }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content%}

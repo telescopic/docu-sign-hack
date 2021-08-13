@@ -1,0 +1,113 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <script>
+        function readURL(input) 
+        {
+            document.getElementById("MapImage").style.display = "block";
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.getElementById('MapImage').src =  e.target.result;
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+
+    <div class="border">
+        <div class="image-container">
+            <img width="600" height="400" id="MapImage" src="{{ image_file }}">
+        </div>
+
+        <!-- <div>
+            <input type="file" id="MapRequest" onchange="readURL(this);">
+        </div> -->
+
+        <form method="POST" action="" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4"></legend>
+                <table class="table">
+                <tr>
+                    <th>
+                    {{ form.latitude.label() }}
+                    </th>
+
+                    <th>
+                    {% if form.latitude.errors %}
+                        {{ form.latitude(class="form-control form-control-lg is-invalid")}}
+                        <div class="invalid-feedback">
+                            {% for error in form.latitude.errors %}
+                                <span> {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.latitude() }}
+                    {% endif %}
+                    </th>
+                </tr>
+
+                <tr>
+                    <th>
+                    {{ form.longitude.label() }}
+                    </th>
+
+                    <th>
+                    {% if form.longitude.errors %}
+                        {{ form.longitude(class="form-control form-control-lg is-invalid")}}
+                        <div class="invalid-feedback">
+                            {% for error in form.longitude.errors %}
+                                <span> {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.longitude() }}
+                    {% endif %}
+                    </th>
+                </tr>
+
+                <tr>
+                    <th>
+                    {{ form.description.label() }}
+                    </th>
+
+                    <th>
+                    {% if form.description.errors %}
+                        {{ form.description(class="form-control form-control-lg is-invalid")}}
+                        <div class="invalid-feedback">
+                            {% for error in form.description.errors %}
+                                <span> {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.description() }}
+                    {% endif %}
+                    </th>
+                </tr>
+
+                </table>
+
+                <input type="file" id="MapRequest" onchange="readURL(this);">
+
+                <!-- <div class="form-group" id="ImageUpload">
+                    {{ form.picture.label() }}
+                    {{ form.picture(class="form-control-file") }}
+                    {% if form.picture.errors %}
+                        {% for error in form.picture.errors %}
+                            <span class="text-danger"> {{ error }}</span> </br>
+                        {% endfor %}
+                    {% endif %}
+                </div> -->
+
+            </fieldset>
+
+            <div form="form-group">
+                {{ form.submit(class="btn btn-outline-info")}}
+            </div>
+        </form>
+    </div>
+{% endblock content%}

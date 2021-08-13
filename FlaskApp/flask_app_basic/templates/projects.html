@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+{% block headcontent %}
+  <script>
+function buttonClick(btn){
+        if(btn.src == "http://localhost:5000/static/icons/plus.png"){
+            btn.setAttribute("src", "{{url_for('static', filename='icons/minus.png')}}");
+            btn.style.backgroundColor = "#ff1a1a";
+        }
+        else{
+            btn.src = "{{url_for('static', filename='icons/plus.png')}}"
+            btn.style.backgroundColor = "#70f197";
+        }
+    }
+  </script>
+{% endblock %}
+
+{% block content %}
+{% for project in projects %}
+  <article class="media content-section">
+    <div class="media-body">
+      <div class="article-metadata">
+        <a class="mr-2" href="#">{{project.subspecies}}</a>
+      </div>
+      <h2><a class="article-title" href="#">{{project.heading}}</a></h2>
+      <p class="article-content"><ul>
+        <li>
+          <b>Status:</b> 
+          {% if project.status != "[COMPLETE]" %}
+            {{project.status}}
+          {% else %}
+            <a href="#">{{project.status}}</a>
+          {% endif %}
+
+          &nbsp;
+          
+          {% if project.sign_status != "[SIGN READY]"%}
+            {{project.sign_status}}
+          {% else %}
+            <a href="{{url_for('embed_sign_doc')}}">{{project.sign_status}}&#8599;</a>
+          {% endif %}
+        </li>
+        <li><b>Scope:</b> {{project.scope}}</li>
+        <li><b>Target:</b> {{project.target}}</li>
+        <li><a href="{{url_for('branches')}}">View Maps &#8599;</a></li>
+        
+          {% if drop_down != "none" %}
+          <li>
+          Final Map for Distribution
+          <input onclick="buttonClick(this)" type="image" style="padding-bottom: 0px ; margin-left:5px; margin-top:5px; height:25px; width:25px; background-color: #70f197; border-radius: 15px;" data-toggle="collapse" data-target="#final-map" src="{{url_for('static', filename='icons/plus.png')}}" >
+          <div id="final-map" class="collapse" style="width:100%">
+            <img src="{{url_for('static', filename='saved_pdfs/cert.jpg')}}" style="width:100%">
+          </div>
+        </li>   
+          {% endif %}
+        </ul>
+      </p>
+    </div>
+  </article>
+{% endfor %}
+{% endblock %}

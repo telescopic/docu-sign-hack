@@ -1,0 +1,222 @@
+{% extends 'layout.html' %}
+{% block headcontent %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='switch.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='collapsible.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+{% endblock %}
+{% block content %}
+    <script>
+        var cb = true;
+        var notesQ = []; // contains all the queued notes to be commited
+        var noteID = 0;
+        var state = 0;
+        console.log(localStorage.features);
+        function addNote(){
+
+            parent = document.getElementById("q");
+
+            var subject = document.getElementById("isubject").value;
+            var body = document.getElementById("ibody").value;
+            var cur_note_id = noteID;
+            noteID = noteID + 1;
+
+            var note = {
+                note_id: cur_note_id, 
+                subject: subject, 
+                body: body
+            };
+
+            notesQ.push(note);
+
+            var nDiv = document.createElement("div");
+            nDiv.style.width = "100%";
+
+            var attClass = document.createAttribute("class");
+            attClass.value = "content-section";
+
+            var attName = document.createAttribute("id");
+            attName.value = cur_note_id.toString()+"div";
+
+            nDiv.setAttributeNode(attClass);
+            nDiv.setAttributeNode(attName);
+
+            nDiv.innerHTML = "<b>"+subject+":</b> <br>"+body+"<br> <button id="+cur_note_id.toString()+" onclick='removeNote(this.id)'>remove note</button>";
+
+            parent.append(nDiv);
+
+            document.getElementById("isubject").value = "";
+            document.getElementById("ibody").value = "";
+        }
+
+        function removeNote(noteid){
+            console.log(noteid);
+            child = document.getElementById(noteid+"div");
+            for(var i=0; i<notesQ.length; i++){
+                if(notesQ[i].note_id == noteid){
+                    notesQ.splice(i, 1);
+                    break;
+                }
+            }
+            child.remove();
+        }
+
+        function commitNotes(){
+            document.getElementById("cnum").value = Date.now();
+            document.getElementById("igraph").value = localStorage.initialFeatures;
+            document.getElementById("fgraph").value = localStorage.currentFeatures;
+
+            notesString = "";
+            for(var i=0; i<notesQ.length; i++){
+                notesString += "subject="+notesQ[i].subject+"|"+"body="+notesQ[i].body;
+
+                if(i!=notesQ.length-1){
+                    notesString += "~";
+                }
+            }
+            document.getElementById("notesQ").value = notesString;
+        }
+
+        function toggleNotesView(){
+            
+            img = document.getElementById("collapsebutton");
+            if(state == 0){
+                state = 1;
+                img.setAttribute("src", "{{ url_for('static', filename='icons/uparrow.png')}}");
+            }
+            else{
+                state = 0;
+                img.setAttribute("src", "{{ url_for('static', filename='icons/downarrow.png')}}");
+            }
+        }
+
+        function swapView(){
+            if(cb == true){
+                cb = false;
+                var ifrm = document.createElement("iframe");
+                document.getElementById("toggleView").innerHTML = "Mode: Edit"
+                ifrm.setAttribute("src", "{{ url_for('map_edit')}}");
+                ifrm.style.width = "100%";
+                ifrm.style.height = "600px";
+                ifrm.id = "iedit";
+                document.getElementById("idraw").remove();
+                document.getElementById("mDiv").append(ifrm);
+            }
+            else{
+                cb = true;
+                var ifrm = document.createElement("iframe");
+                document.getElementById("toggleView").innerHTML = "Mode: Draw"
+                ifrm.setAttribute("src", "{{ url_for('map_draw')}}");
+                ifrm.style.width = "100%";
+                ifrm.style.height = "600px";
+                ifrm.id = "idraw";
+                document.getElementById("iedit").remove();
+                document.getElementById("mDiv").append(ifrm);
+            }
+        }
+
+        function redirectBranchInfo(){
+            location.href = "{{url_for('branch_info')}}";
+        }
+    </script>
+    <div class="row">
+        <div class="row">
+            &nbsp;
+            <small class="btn" style="font-size: 15px; height:40px; background-color: #403F4C; color: rgb(255, 255, 255); border-color: black;">
+                {{ author }}
+            </small> 
+            
+            <h3>/</h3> 
+            &nbsp;
+            <button class="btn" style="font-size: 15px; height:40px;" onclick="redirectBranchInfo()">
+                <b>{{ branch }}</b>
+            </button>
+        </div>
+        
+        <button onclick="swapView()" class="btn ml-auto" style="width:200px; font-size: 15px;" id="toggleView">Mode: Draw</button>
+    </div>
+    <hr style="height:0px;">
+    <div class="row">
+        <div id="mDiv" style="height:600px; width:100%;">
+            <iframe src="{{ url_for('map_draw')}}" id="idraw" style="height:600px;width:100%;"></iframe>
+        </div>
+    </div>
+
+    <br>
+    <div class="content-section">
+        <div class="row">
+              <h4 id="notesViewStatus">
+                  Queued Notes
+              </h4>
+              <button onclick="toggleNotesView()"  class="btn ml-auto" data-toggle="collapse" data-target="#q" style="height:80%; width:10%; border: 20px; outline:none;">
+                  <img id="collapsebutton" src="{{ url_for('static', filename='icons/downarrow.png')}}" style="height:50% ; width:50%;">
+              </button>
+        </div>
+        <div id="q" class="collapse">
+            
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block sidecontent %}
+    
+    <div class="content-section">
+        <div class="content-section">
+            <div class="panel-heading row">
+                <a class="btn" style="width:100%" href="{{url_for('commit_history')}}">
+                    View commit history
+                    <img src="{{ url_for('static', filename='icons/history.png')}}" style="height:90% ; width:15%;">
+                </a>
+            </div>
+            
+            <hr style="height:0px; padding: 0px;">
+
+            <div class="panel-heading row">
+                <div style="width:50%;">
+                    <a class="btn" style="width:100%;" href="{{url_for('fork_branch')}}">
+                        Clone
+                        <img src="{{ url_for('static', filename='icons/fork.png')}}" style="height:20% ; width:20%;">
+                    </a>
+                </div>
+                <div style="width:50%;">
+                    <a class="btn" style="width:100%;" href="{{url_for('merge_branch')}}">
+                        Merge
+                        <img src="{{ url_for('static', filename='icons/merge.png')}}" style="height:25% ; width:25%;">
+                    </a>
+                </div>  
+            </div>
+        </div>
+    
+
+        <div class="content-section">
+            <h4>Add Notes:</h4>
+            <div>
+                <label>Subject:</label>
+                <textarea id="isubject" name="isubject" cols="18" rows="1" style="border-radius: 10px; outline: none;"></textarea>
+                <br>
+                <label>Body:</label>
+                <textarea id="ibody" name="ibody" cols="18" rows="4" style="border-radius: 10px; outline:none;"></textarea>
+            </div>
+            <div style="width:110%;">
+                <button class="btn" style="width:90%;" onclick="addNote()">
+                    Add note
+                    <img src="{{ url_for('static', filename='icons/note.png')}}" style="height:15% ; width:15%;">
+                </button>
+            </div>
+            <br>
+            <div style="width:110%;">
+                <!-- <button class="btn" style="width:90%;" onclick="commitNotes()">
+                    Commit all notes
+                </button> -->
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    {{ form.commitNumber(style="display:none", class="form-control", id="cnum") }}
+                    {{ form.initialGraphics(style="display:none", class="form-control", id="igraph") }}
+                    {{ form.finalGraphics(style="display:none", class="form-control", id="fgraph") }}
+                    {{ form.notes(style="display:none", class="form-control", id="notesQ") }}     
+                    {{ form.submit(id="submit", class="btn", style="width:90%;", onclick="commitNotes()") }}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

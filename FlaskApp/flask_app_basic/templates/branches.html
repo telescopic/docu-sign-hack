@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block headcontent %}
+<script>
+    function setContents(a_tag){
+        document.getElementById("branch-name").value = a_tag.id;
+        form_obj = document.getElementById("submit");
+        form_obj.click();
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="content-section" style="border-radius: 20px;">
+    <h3>Existing Branches for this map:</h3>
+    <ul>
+        {% for branch in branches %}
+            <li>
+                <a href="#" id="{{branch}}" onclick="setContents(this)"> {{branch}} </a>
+                {% if branch == "base-branch" %}
+                    <small>(start here)</small>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <form method="POST" action="" >
+        {{ form.hidden_tag() }} 
+        {{ form.branch_name(style="display:none", class="form-control", id="branch-name") }}
+        {{ form.submit(style="display:none", id="submit", class="btn") }}
+    </form>
+</div>
+{% endblock %}

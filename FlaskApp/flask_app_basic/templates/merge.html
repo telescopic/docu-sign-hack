@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block headcontent %}
+<script>
+    function buttonClick(btn){
+        if(btn.src == "http://127.0.0.1:5000/static/icons/plus.png"){
+            btn.setAttribute("src", "{{url_for('static', filename='icons/minus.png')}}");
+            btn.style.backgroundColor = "#ff1a1a";
+        }
+        else{
+            btn.src = "{{url_for('static', filename='icons/plus.png')}}"
+            btn.style.backgroundColor = "#70f197";
+        }
+    }
+
+    function submitMerge(){
+        // makes and submits a merge request
+        document.getElementById("req-type").value = "request";
+        document.getElementById("from-branch").value = "{{from_branch}}";
+
+        nstr = document.getElementById("options-m").value;
+        // console.log(nstr)
+        parr = nstr.split('/')[1]; // this is the to branch
+        // console.log(parr)
+
+        document.getElementById("to-branch").value = parr;
+
+        document.getElementById("merge").click();
+    }
+
+    function acceptMerge(from_branch, to_branch){
+        // accepts a merge request and updates db
+        document.getElementById("req-type").value = "accept";
+        document.getElementById("from-branch").value = from_branch;
+        document.getElementById("to-branch").value = to_branch;
+        document.getElementById("merge").click();
+    }
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="content-section" style="border-radius: 20px;">
+    <h3> Manage Map Merging </h3>
+    <hr>
+    Submit Map Merge Request <br>
+    <small>(Submit request to merge this map version with another map version)</small>
+    <div>
+        <br> 
+        <div class="row">
+            &nbsp;
+            <small class="btn" style="font-size: 12px; height:40px; background-color: #403F4C; color: rgb(255, 255, 255); border-color: black;">
+                {{ from_author }}
+            </small> 
+            
+            <h3><b>/</b></h3> 
+            &nbsp;
+            <small class="btn" style="font-size: 12px; height:40px;">
+                <b>{{ from_branch }}</b>
+            </small>
+
+            &nbsp;
+
+            <h5> <b> &rarr; </b> </h5>
+            &nbsp;
+            <select id="options-m" style="font-size: 12px; height:40px; width:200px; border-radius: 20px; outline:none">
+                {% for state in map_states%}
+                <option value="{{state[0]}}/{{state[1]}}">{{state[0]}}/{{state[1]}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <br>
+        <div class="row">
+            &nbsp;
+            <button onclick="submitMerge()" class="btn" style="font-size: 15px; margin-right:20px; width:300px;">
+                Confirm & Submit Merge Request
+            </button>
+        </div>
+
+    </div>
+    
+    <hr>
+
+    <div>
+        Accept Map Merge Request <br>
+        <small>(Accept a pending request to merge this map version with another map version)</small>
+        <br>
+        
+        <div id="mergeQ">
+            {% if merge_requests|length == 0 %}
+            <br>
+            <h6> No Merge Requests to this Map! </h6>
+            {% endif %}
+            
+            {% for merge_request in merge_requests %}
+            <div>
+                <div class="row content-section">
+                    
+                    <small class="btn" style="font-size: 12px; height:40px;">
+                        <b>{{ merge_request.from_branch }}</b>
+                    </small>
+
+                    <h5> <b> &rarr; </b> </h5>
+                    
+                    <small class="btn" style="font-size: 12px; height:40px;">
+                        <b>{{ merge_request.to_branch }}</b>
+                    </small>
+                    <input onclick="buttonClick(this)" type="image" style="padding-bottom: 0px ; margin-left:5px; margin-top:5px; height:25px; width:25px; background-color: #70f197; border-radius: 15px;" data-toggle="collapse" data-target="#{{merge_request.id}}mr" src="{{url_for('static', filename='icons/plus.png')}}" >
+                    
+                </div>
+    
+                <div id="{{merge_request.id}}mr" class="collapse">
+                    <div class="row content-section" style="position:relative">
+                        <iframe src="{{url_for('map_base')}}?graphics={{merge_request.to_graphics}}" style="height:300x; width:300px"></iframe>
+                        <img src="{{url_for('static', filename='icons/right-arrow.png')}}" style="position:absolute; left:320px; top:130px; width:80px; height:80px;">
+                        <iframe class="ml-auto" src="{{url_for('map_base')}}?graphics={{merge_request.from_graphics}}" style="height:300px; width:300px;"></iframe>
+                    </div>
+                    <button onclick="acceptMerge('{{merge_request.from_branch}}', '{{merge_request.to_branch}}')" class="btn" id="{{merge_request.from_branch}}/{{merge_request.to_branch}}">Accept this merge request!</button>
+                </div>
+            </div>
+            
+            {% endfor %}
+        </div>
+    </div>
+
+    <form method="POST" action="" >
+        {{ merge.hidden_tag() }}
+        {{ merge.merge_req_type(style="display:none", class="form-control", id="req-type")}}
+        {{ merge.from_branch(style="display:none", class="form-control", id="from-branch") }}
+        {{ merge.to_branch(style="display:none", class="form-control", id="to-branch") }}
+        {{ merge.submit(style="display:none", id="merge", class="btn") }}
+    </form>
+
+</div>
+{% endblock %}

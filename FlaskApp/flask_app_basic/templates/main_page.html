@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+    <article class="media content-section">
+        <div class="media-body">
+
+        <img src="{{ url_for('static', filename='banner.png') }}" style="height:100% ; width:100%;">
+        
+        <div class="article-metadata">
+            <h5><b> Map and Keep track of Chimpanzee Habitats! </b></h5>
+        </div>
+
+        <p class="article-content">
+            chIMPRINT is an application that helps JGI to faster review, change, update and approve dynamic conservation maps as part of its collaborative Conservation Standards planning process with multiple stakeholders in different locations 
+        </p>
+
+        <hr>
+
+        <p> Currently, the tool supports the following functionality:
+            <ul>
+                <li>Clone a Map</li>
+                <li>Draw/Edit shapes on the Map with notes/comments</li>
+                <li>Request the changes to be merged into another map</li>
+                <li>View/Approve requests for merging</li>
+            </ul>
+        </p>
+        
+        <hr>
+        
+    </div>
+    </article>
+{% endblock content%}

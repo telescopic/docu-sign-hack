@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no">
+    
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Maps Toolbar</title>
+    
+    <link rel="stylesheet" href="https://js.arcgis.com/3.37/dijit/themes/nihilo/nihilo.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.37/esri/css/esri.css">
+    <style>
+      html, body, #mainWindow {
+        font-family: sans-serif; 
+        height: 100%; 
+        width: 100%; 
+      }
+      html, body {
+        margin: 0; 
+        padding: 0;
+      }
+      #header {
+        height: 80px; 
+        overflow: auto;
+        padding: 0.5em;
+      }
+    </style>
+    
+    <script src="https://js.arcgis.com/3.37/"></script>
+    <script>
+      var map, toolbar, symbol, geomTask;
+      require([
+        "esri/map", 
+        "esri/toolbars/draw",
+        "esri/graphic",
+        "esri/layers/GraphicsLayer",
+        "esri/Color",
+
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/symbols/SimpleLineSymbol",
+        "esri/symbols/SimpleFillSymbol",
+
+        "dojo/parser", "dijit/registry",
+
+        "dijit/layout/BorderContainer", "dijit/layout/ContentPane", 
+        "dijit/form/Button", "dijit/WidgetSet", "dojo/domReady!"
+      ], function(
+        Map, Draw, Graphic, GraphicsLayer, Color,
+        SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,
+        parser, registry
+      ) {
+        parser.parse();
+        
+          map = new Map("map", {
+            basemap: "streets",
+            center: [3.955, 59.338],
+            zoom: 3
+          });
+        
+
+
+        gLayer = new GraphicsLayer();
+        map.addLayer(gLayer);
+
+        if(localStorage.features != undefined){
+        
+          JSON.parse(localStorage.features).forEach(function(featureJson){
+            gLayer.add(new Graphic(featureJson));
+          });
+
+          localStorage.initialFeatures = localStorage.features;
+          localStorage.currentFeatures = localStorage.features;
+        }
+
+        map.on("load", createToolbar);
+
+        // loop through all dijits, connect onClick event
+        // listeners for buttons to activate drawing tools
+        registry.forEach(function(d) {
+          // d is a reference to a dijit
+          // could be a layout container or a button
+          if ( d.declaredClass === "dijit.form.Button" ) {
+            d.on("click", activateTool);
+          }
+        });
+
+        function activateTool() {
+          var tool = this.label.toUpperCase().replace(/ /g, "_");
+          toolbar.activate(Draw[tool]);
+          map.hideZoomSlider();
+        }
+
+        function createToolbar(themap) {
+          toolbar = new Draw(map);
+          toolbar.on("draw-end", addToMap);
+        }
+
+        function addToMap(evt) {
+          var symbol;
+          toolbar.deactivate();
+          map.showZoomSlider();
+          color = Color.fromHex(document.getElementById("color").value);
+          color.a = 0.3;  
+          switch (evt.geometry.type) {
+            case "point":
+            case "multipoint":
+              symbol = new SimpleMarkerSymbol();
+              break;
+            case "polyline":
+              symbol = new SimpleLineSymbol();
+              break;
+            default:
+              symbol = new SimpleFillSymbol();
+              break;
+          }
+          symbol.setColor(color);
+          var graphic = new Graphic(evt.geometry, symbol);
+          gLayer.add(graphic);
+
+          console.log(gLayer);
+          var graphics = []
+          if(localStorage.features != undefined){
+            graphics = JSON.parse(localStorage.features)
+          }
+          graphics.push(graphic.toJson());
+          localStorage.features=JSON.stringify(graphics);
+          localStorage.currentFeatures = JSON.stringify(graphics);
+        }
+      });
+    </script>
+  </head>
+  <body class="nihilo">
+
+  <div id="mainWindow" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'">
+    <div id="header" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+      <button data-dojo-type="dijit/form/Button">Point</button>
+      <button data-dojo-type="dijit/form/Button">Multi Point</button>
+      <button data-dojo-type="dijit/form/Button">Line</button>
+      <button data-dojo-type="dijit/form/Button">Polyline</button>
+      <button data-dojo-type="dijit/form/Button">Polygon</button>
+      <button data-dojo-type="dijit/form/Button">Freehand Polyline</button>
+      <button data-dojo-type="dijit/form/Button">Freehand Polygon</button>
+      
+      <button data-dojo-type="dijit/form/Button">Arrow</button>
+      <button data-dojo-type="dijit/form/Button">Triangle</button>
+      <button data-dojo-type="dijit/form/Button">Circle</button>
+      <button data-dojo-type="dijit/form/Button">Ellipse</button>
+      <input type="color" id="color" value="#ff0000">
+    </div>
+    <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
+  </div>
+
+  </body>
+</html>

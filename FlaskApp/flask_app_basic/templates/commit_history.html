@@ -1,0 +1,86 @@
+{% extends 'layout_history.html' %}
+
+{% block headcontent %}
+<script>
+    function buttonClick(btn){
+        if(btn.src == "http://127.0.0.1:5000/static/icons/plus.png"){
+            btn.setAttribute("src", "{{url_for('static', filename='icons/minus.png')}}");
+            btn.style.backgroundColor = "#ff1a1a";
+        }
+        else{
+            btn.src = "{{url_for('static', filename='icons/plus.png')}}"
+            btn.style.backgroundColor = "#70f197";
+        }
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+    <div class="content-section">
+        <div >
+            Branch:
+            <button class="btn" style="background-color: black;">{{author_name}}</button>
+            /
+            <a class="btn" href="{{url_for('branch_info')}}">{{ branch_name }}</a>
+        </div>
+        <div >
+            Finalize this map for distribution?
+            <a href="{{url_for('progress')}}" class="btn">Distribute for signing</a>
+            <br>
+            <small>
+                (note: this prevents any additional modifications to the map. Only distribute for signing
+                when an agreement has been reached)
+            </small>
+        </div>
+    </div>
+    <div class="content-section rounded" id="history">
+        {% if changes|length == 0 %}
+        <h3>No history of changes to display!</h3>
+        {% endif %}
+
+        {% for change in changes %}
+        <div>
+
+            <div class="content-section">
+                <small id="{{change.commit_number}}"></small>
+                
+                <script>
+                    var d = new Date(Number("{{change.commit_number}}"));
+                    document.getElementById("{{change.commit_number}}").innerHTML = "Submitted on: "+d.toString();
+                </script>
+
+                <div class="row content-section" style="position:relative">
+                    <iframe src="{{url_for('map_base')}}?graphics={{change.initial_graphics}}" style="height:400x; width:400px"></iframe>
+                    <img src="{{url_for('static', filename='icons/right-arrow.png')}}" style="position:absolute; left:470px; top:150px; width:100px; height:100px;">
+                    <iframe class="ml-auto" src="{{url_for('map_base')}}?graphics={{change.final_graphics}}" style="height:400px; width:400px;"></iframe>
+                    
+                </div>
+
+                <div class="row content-section">
+                        Changelog
+                        <input onclick="buttonClick(this)" type="image" style="padding-bottom: 0px ; margin-left:5px; margin-top:5px; height:25px; width:25px; background-color: #70f197; border-radius: 15px;" data-toggle="collapse" data-target="#{{change.commit_number}}notes" src="{{url_for('static', filename='icons/plus.png')}}" >
+                    
+                </div>
+
+                <div id="{{change.commit_number}}notes" class="collapse">
+
+                </div>
+                <script>
+                    var arr = "{{change.notes}}".split("~");
+                    for(var i=0; i<arr.length; i++){
+                        parr = arr[i].split("|");
+                        subject = parr[0].split("=")[1];
+                        body = parr[1].split("=")[1];
+
+                        ndiv = document.createElement("div");
+                        ndiv.setAttribute("class", "content-section");
+                        ndiv.innerHTML = "<b>"+subject+":</b> <br>" + body;
+                        document.getElementById("{{change.commit_number}}notes").append(ndiv);
+                    }
+                </script>
+            </div>
+        </div>
+        <hr>
+        {% endfor %}
+    </div>
+{% endblock %}
